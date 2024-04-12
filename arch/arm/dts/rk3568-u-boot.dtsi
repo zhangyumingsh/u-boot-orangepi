@@ -8,8 +8,8 @@
 	aliases {
 		ethernet0 = &gmac0;
 		ethernet1 = &gmac1;
-		mmc0 = &sdmmc0;
-		mmc1 = &sdhci;
+		mmc0 = &sdhci;
+		mmc1 = &sdmmc0;
 		mmc2 = &sdmmc1;
 	};
 
@@ -194,9 +194,9 @@
 	};
 };
 
-&gmac0_clkin{
-	u-boot,dm-pre-reloc;
-};
+//&gmac0_clkin{
+//	u-boot,dm-pre-reloc;
+//};
 
 &gmac1_clkin {
 	u-boot,dm-pre-reloc;
@@ -216,11 +216,11 @@
 	assigned-clock-rates = <0>, <125000000>;
 
 	pinctrl-names = "default";
-	pinctrl-0 = <&gmac0_miim
-		     &gmac0_tx_bus2
-		     &gmac0_rx_bus2
-		     &gmac0_rgmii_clk
-		     &gmac0_rgmii_bus>;
+//pinctrl-0 = <&gmac0_miim
+//		     &gmac0_tx_bus2
+//		     &gmac0_rx_bus2
+//		     &gmac0_rgmii_clk
+//		     &gmac0_rgmii_bus>;
 
 	tx_delay = <0x3c>;
 	rx_delay = <0x2f>;
@@ -244,11 +244,11 @@
 	assigned-clock-rates = <0>, <125000000>;
 
 	pinctrl-names = "default";
-	pinctrl-0 = <&gmac1m1_miim
-		     &gmac1m1_tx_bus2
-		     &gmac1m1_rx_bus2
-		     &gmac1m1_rgmii_clk
-		     &gmac1m1_rgmii_bus>;
+//	pinctrl-0 = <&gmac1m1_miim
+//		     &gmac1m1_tx_bus2
+//		     &gmac1m1_rx_bus2
+//		     &gmac1m1_rgmii_clk
+//		     &gmac1m1_rgmii_bus>;
 
 	tx_delay = <0x4f>;
 	rx_delay = <0x26>;
@@ -427,31 +427,3 @@
 	u-boot,dm-pre-reloc;
 	status = "okay";
 };
-
-#if 0
-&i2c0 {
-	u-boot,dm-pre-reloc;
-	status = "okay";
-};
-
-&i2c0_xfer {
-	u-boot,dm-pre-reloc;
-	status = "okay";
-};
-
-&i2c1 {
-	u-boot,dm-pre-reloc;
-	status = "okay";
-};
-
-&i2c1_xfer {
-	u-boot,dm-pre-reloc;
-	status = "okay";
-};
-
-&pcfg_pull_none_smt {
-	u-boot,dm-pre-reloc;
-	status = "okay";
-};
-#endif
-
