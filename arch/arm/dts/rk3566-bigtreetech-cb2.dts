@@ -10,8 +10,8 @@
 #include <dt-bindings/input/input.h>
 
 / {
-	model = "Bigtreetech CB2";
-	compatible = "rockchip,rk3566-bigtreetech-cb2", "rockchip,rk3568";
+	model = "Bigtreetech CB2 ";
+	compatible = "btt,cb2", "rockchip,rk3566";
 
 	dc_12v: dc-12v {
 		u-boot,dm-pre-reloc;
@@ -42,7 +42,30 @@
 		regulator-boot-on;
 		regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
-		vin-supply = <&dc_12v>;
+		vin-supply = <&vcc5v0_sys>;
+	};
+
+	vcc5v0_host: vcc5v0-host-regulator {
+		u-boot,dm-pre-reloc;
+		compatible = "regulator-fixed";
+		enable-active-high;
+		gpio = <&gpio0 RK_PC5 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&vcc5v0_host_en>;
+		regulator-name = "vcc5v0_host";
+		regulator-always-on;
+		regulator-boot-on;
+	};
+
+	led_sys: led-sys {
+		u-boot,dm-pre-reloc;
+		compatible = "regulator-fixed";
+		regulator-name = "led_sys";
+		enable-active-high;
+		gpio = <&gpio0 RK_PA0 GPIO_ACTIVE_HIGH>; // Turn on blue led
+		regulator-boot-on;
+		regulator-always-on;
+		vin-supply = <&vcc3v3_sys>;
 	};
 
 	adc-keys {
@@ -60,112 +83,6 @@
 			press-threshold-microvolt = <9>;
 		};
 	};
-
-	/* labeled +3.3v For PCIe only in schematic */
-	vcc3v3_pcie: vcc3v3-pcie-regulator {
-		u-boot,dm-pre-reloc;
-		compatible = "regulator-fixed";
-		regulator-name = "vcc3v3_pcie";
-		enable-active-high;
-		gpio = <&gpio0 RK_PB7 GPIO_ACTIVE_HIGH>;
-		regulator-always-on;
-		regulator-boot-on;
-		regulator-min-microvolt = <3300000>;
-		regulator-max-microvolt = <3300000>;
-		vin-supply = <&dc_12v>;
-	};
-
-};
-
-&gmac0 {
-	phy-mode = "rgmii";
-	clock_in_out = "output";
-
-	snps,reset-gpio = <&gpio2 RK_PD3 GPIO_ACTIVE_LOW>;
-	snps,reset-active-low;
-	/* Reset time is 20ms, 100ms for rtl8211f */
-	snps,reset-delays-us = <0 20000 100000>;
-	assigned-clocks = <&cru SCLK_GMAC0_RX_TX>, <&cru SCLK_GMAC0>;
-	assigned-clock-parents = <&cru SCLK_GMAC0_RGMII_SPEED>;
-	assigned-clock-rates = <0>, <125000000>;
-
-	pinctrl-names = "default";
-	pinctrl-0 = <&gmac0_miim
-		     &gmac0_tx_bus2
-		     &gmac0_rx_bus2
-		     &gmac0_rgmii_clk
-		     &gmac0_rgmii_bus>;
-
-	tx_delay = <0x3c>;
-	rx_delay = <0x2f>;
-
-	phy-handle = <&rgmii_phy0>;
-	status = "disabled";
-};
-
-&gmac1 {
-	phy-mode = "rgmii";
-	clock_in_out = "output";
-
-	snps,reset-gpio = <&gpio3 RK_PC2 GPIO_ACTIVE_LOW>;
-	snps,reset-active-low;
-	/* Reset time is 20ms, 100ms for rtl8211f */
-	snps,reset-delays-us = <0 20000 100000>;
-
-	assigned-clocks = <&cru SCLK_GMAC1_RX_TX>, <&cru SCLK_GMAC1>;
-	assigned-clock-parents = <&cru SCLK_GMAC1_RGMII_SPEED>;
-	assigned-clock-rates = <0>, <125000000>;
-
-	pinctrl-names = "default";
-	pinctrl-0 = <&gmac1m0_miim
-		&gmac1m0_tx_bus2
-		&gmac1m0_rx_bus2
-		&gmac1m0_rgmii_clk
-		&gmac1m0_rgmii_bus>;
-
-	tx_delay = <0x4f>;
-	rx_delay = <0x26>;
-
-	phy-handle = <&rgmii_phy1>;
-	status = "okay";
-};
-
-&gmac1m0_miim {
-	u-boot,dm-pre-reloc;
-};
-
-&gmac1m0_tx_bus2 {
-	u-boot,dm-pre-reloc;
-};
-
-&gmac1m0_rx_bus2 {
-	u-boot,dm-pre-reloc;
-};
-
-&gmac1m0_rgmii_clk {
-	u-boot,dm-pre-reloc;
-};
-
-&gmac1m0_rgmii_bus {
-	u-boot,dm-pre-reloc;
-};
-
-&gpio3 {
-	u-boot,dm-pre-reloc;
-};
-
-&mdio0 {
-	rgmii_phy0: phy@0 {
-		compatible = "ethernet-phy-ieee802.3-c22";
-		reg = <0x0>;
-	};
-};
-
-&mdio1 {
-	rgmii_phy1: phy@0 {
-		compatible = "ethernet-phy-ieee802.3-c22";
-		reg = <0x0>;
-	};
 };
 
 &crypto {
@@ -176,16 +93,9 @@
 	status = "okay";
 };
 
-&gpu {
-	u-boot,dm-pre-reloc;
-        mali-supply = <&vdd_gpu>;
-        status = "okay";
-};
-
 &pmu_io_domains {
 	status = "okay";
-	pmuio1-supply = <&vcc3v3_pmu>;
-	pmuio2-supply = <&vcc3v3_pmu>;
+	pmuio2-supply = <&vcca1v8_pmu>;
 	vccio1-supply = <&vccio_acodec>;
 	vccio3-supply = <&vccio_sd>;
 	vccio4-supply = <&vcc_1v8>;
@@ -196,6 +106,10 @@
 };
 
 &gpio0 {
+	u-boot,dm-pre-reloc;
+};
+
+&gpio3 {
 	u-boot,dm-pre-reloc;
 };
 
@@ -213,6 +127,7 @@
 		regulator-name = "vdd_cpu";
 		regulator-min-microvolt = <712500>;
 		regulator-max-microvolt = <1390000>;
+		regulator-init-microvolt = <900000>;
 		regulator-ramp-delay = <2300>;
 		fcs,suspend-voltage-selector = <1>;
 		regulator-boot-on;
@@ -245,6 +160,8 @@
 		//fb-inner-reg-idxs = <2>;
 		/* 1: rst regs (default in codes), 0: rst the pmic */
 		pmic-reset-func = <0>;
+		/* not save the PMIC_POWER_EN register in uboot */
+		not-save-power-en = <1>;
 
 		vcc1-supply = <&vcc3v3_sys>;
 		vcc2-supply = <&vcc3v3_sys>;
@@ -304,6 +221,7 @@
 				regulator-initial-mode = <0x2>;
 				regulator-name = "vdd_logic";
 				regulator-state-mem {
+					u-boot,dm-pre-reloc;
 					regulator-on-in-suspend;
 				};
 			};
@@ -406,12 +324,14 @@
 			};
 
 			vccio_sd: LDO_REG5 {
+				u-boot,dm-pre-reloc;
 				regulator-always-on;
 				regulator-boot-on;
 				regulator-min-microvolt = <1800000>;
 				regulator-max-microvolt = <3300000>;
 				regulator-name = "vccio_sd";
 				regulator-state-mem {
+					u-boot,dm-pre-reloc;
 					regulator-off-in-suspend;
 				};
 			};
@@ -484,10 +404,12 @@
 			};
 
 			vcc_3v3: SWITCH_REG1 {
+				u-boot,dm-pre-reloc;
 				regulator-always-on;
 				regulator-boot-on;
 				regulator-name = "vcc_3v3";
 				regulator-state-mem {
+					u-boot,dm-pre-reloc;
 					regulator-off-in-suspend;
 				};
 			};
@@ -506,6 +428,47 @@
 	};
 };
 
+&u2phy1_host {
+	u-boot,dm-pre-reloc;
+	phy-supply = <&vcc5v0_host>;
+	status = "okay";
+};
+
+&u2phy1_otg {
+	u-boot,dm-pre-reloc;
+	phy-supply = <&vcc5v0_host>;
+	status = "okay";
+};
+
+&usb2phy1 {
+	u-boot,dm-pre-reloc;
+	status = "okay";
+};
+
+&usb_host0_ehci {
+	u-boot,dm-pre-reloc;
+	status = "okay";
+};
+
+&usb_host0_ohci {
+	u-boot,dm-pre-reloc;
+	status = "okay";
+};
+
+&usb_host1_ehci {
+	u-boot,dm-pre-reloc;
+	status = "okay";
+};
+
+&usb_host1_ohci {
+	u-boot,dm-pre-reloc;
+	status = "okay";
+};
+
+&usb2phy1_grf {
+	u-boot,dm-pre-reloc;
+};
+
 &pinctrl {
 	u-boot,dm-spl;
 	pmic {
@@ -519,13 +482,13 @@
 		soc_slppin_gpio: soc_slppin_gpio {
 			u-boot,dm-pre-reloc;
 			rockchip,pins =
-				<0 RK_PA2 RK_FUNC_GPIO &pcfg_output_low>;
+				<0 RK_PA2 RK_FUNC_GPIO &pcfg_output_low_pull_down>;
 		};
 
 		soc_slppin_slp: soc_slppin_slp {
 			u-boot,dm-pre-reloc;
 			rockchip,pins =
-				<0 RK_PA2 RK_FUNC_1 &pcfg_pull_none>;
+				<0 RK_PA2 RK_FUNC_1 &pcfg_pull_up>;
 		};
 
 		soc_slppin_rst: soc_slppin_rst {
@@ -534,27 +497,11 @@
 				<0 RK_PA2 RK_FUNC_2 &pcfg_pull_none>;
 		};
 	};
-};
 
-&pipegrf {
-        u-boot,dm-pre-reloc;
-        status = "okay";
-};
-
-&pipe_phy_grf2 {
-        u-boot,dm-pre-reloc;
-        status = "okay";
-};
-
-&combphy2_psq {
-	u-boot,dm-pre-reloc;
-	status = "okay";
-};
-
-&pcie2x1 {
-	u-boot,dm-pre-reloc;
-	reset-gpios = <&gpio0 RK_PB6 GPIO_ACTIVE_HIGH>;
-	vpcie3v3-supply = <&vcc3v3_pcie>;
-	status = "okay";
+	usb {
+		vcc5v0_host_en: vcc5v0-host-en {
+			rockchip,pins = <0 RK_PC5 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
 };
 
